@@ -4,7 +4,8 @@ interface
 
 uses
   Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants, System.Classes, Vcl.Graphics,
-  Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.StdCtrls, Vcl.Buttons, DosCommand, LayoutSaver, Vcl.ExtCtrls;
+  Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.StdCtrls, Vcl.Buttons, DosCommand, LayoutSaver, Vcl.ExtCtrls, Vcl.Mask,
+  System.Actions, Vcl.ActnList;
 
 type
   TfrmGitStatusMain = class(TForm)
@@ -16,15 +17,23 @@ type
     ccRegistryLayoutSaver: TccRegistryLayoutSaver;
     pnlButtons: TPanel;
     btnAddPath: TBitBtn;
-    btnGitStatus: TBitBtn;
+    btnGitStatusSingle: TBitBtn;
+    btnGitStatusAll: TBitBtn;
+    aclGitStatus: TActionList;
+    actCheckOneGit: TAction;
+    actCheckAllGit: TAction;
     procedure btnAddPathClick(Sender: TObject);
-    procedure btnGitStatusClick(Sender: TObject);
     procedure DosCommandNewLine(ASender: TObject; const ANewLine: string; AOutputType: TOutputType);
     procedure edtGitCmdExit(Sender: TObject);
     procedure FormCreate(Sender: TObject);
+    procedure DosCommandTerminated(Sender: TObject);
+    procedure actCheckOneGitExecute(Sender: TObject);
+    procedure actCheckAllGitExecute(Sender: TObject);
   private
     const
       GitPathSection = 'GitPaths';
+    var
+      FFinished: Boolean;
     function  IniFilename: string;
     procedure AddGitPath(const NewGitPath: string);
     procedure CheckGitStatusForFolder(const GitPath: string);
@@ -38,7 +47,46 @@ implementation
 {$R *.dfm}
 
 uses
-  IOUtils, IniFiles;
+  IOUtils, IniFiles, StrUtils;
+
+procedure TfrmGitStatusMain.actCheckAllGitExecute(Sender: TObject);
+begin
+  Screen.Cursor := crHourGlass;
+  try
+    lbOutput.Items.Clear;
+    for var i := 0 to lbPaths.Items.Count - 1 do begin
+      lbOutput.Items.Add(DupeString('=', 50));
+      lbOutput.Items.Add(lbPaths.Items[i]);
+      lbOutput.Items.Add(DupeString('=', 50));
+
+      FFinished := False;
+      CheckGitStatusForFolder(lbPaths.Items[i]);
+
+      while not FFinished do
+        Application.ProcessMessages;
+    end;
+
+  finally
+    Screen.Cursor := crDefault;
+  end;
+end;
+
+procedure TfrmGitStatusMain.actCheckOneGitExecute(Sender: TObject);
+begin
+  Screen.Cursor := crHourGlass;
+  try
+    FFinished := False;
+    if lbPaths.ItemIndex >= 0 then begin
+      lbOutput.Items.Clear;
+      CheckGitStatusForFolder(lbPaths.Items[lbPaths.ItemIndex]);
+
+      while not FFinished do
+        Application.ProcessMessages;
+    end;
+  finally
+    Screen.Cursor := crDefault;
+  end;
+end;
 
 procedure TfrmGitStatusMain.AddGitPath(const NewGitPath: string);
 var
@@ -66,24 +114,31 @@ begin
     AddGitPath(LNewPath);
 end;
 
-procedure TfrmGitStatusMain.btnGitStatusClick(Sender: TObject);
-begin
-  if lbPaths.ItemIndex >= 0 then
-    CheckGitStatusForFolder(lbPaths.Items[lbPaths.ItemIndex]);
-end;
-
 procedure TfrmGitStatusMain.CheckGitStatusForFolder(const GitPath: string);
+var
+  gitfn: string;
 begin
-  lbOutput.Items.Clear;
+  if Length(edtGitCmd.Text) = 0 then
+    gitfn := edtGitCmd.TextHint
+  else
+    gitfn := edtGitCmd.Text;
+
+  if not FileExists(gitfn) then
+    raise EFileNotFoundException.Create(gitfn + ', the git command, was not found.');
 
   DosCommand.CurrentDir := GitPath;
-  DosCommand.CommandLine := '"' + edtGitCmd.Text + '" status';
+  DosCommand.CommandLine := '"' + gitfn + '" status';
   DosCommand.Execute;
 end;
 
 procedure TfrmGitStatusMain.DosCommandNewLine(ASender: TObject; const ANewLine: string; AOutputType: TOutputType);
 begin
   lbOutput.Items.Add(ANewLine);
+end;
+
+procedure TfrmGitStatusMain.DosCommandTerminated(Sender: TObject);
+begin
+  FFinished := True;
 end;
 
 procedure TfrmGitStatusMain.edtGitCmdExit(Sender: TObject);

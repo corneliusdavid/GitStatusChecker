@@ -2,106 +2,143 @@ object frmGitStatusMain: TfrmGitStatusMain
   Left = 274
   Top = 231
   Caption = 'Simple Git Status'
-  ClientHeight = 418
-  ClientWidth = 679
+  ClientHeight = 836
+  ClientWidth = 1358
   Color = clBtnFace
-  Constraints.MinHeight = 300
-  Constraints.MinWidth = 500
+  Constraints.MinHeight = 600
+  Constraints.MinWidth = 1000
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
-  Font.Height = -11
+  Font.Height = -22
   Font.Name = 'Tahoma'
   Font.Style = []
-  OldCreateOrder = False
   Position = poScreenCenter
   OnCreate = FormCreate
-  PixelsPerInch = 96
-  TextHeight = 13
+  PixelsPerInch = 192
+  TextHeight = 27
   object lbPaths: TListBox
     Left = 0
-    Top = 53
-    Width = 249
-    Height = 300
+    Top = 106
+    Width = 498
+    Height = 600
+    Margins.Left = 6
+    Margins.Top = 6
+    Margins.Right = 6
+    Margins.Bottom = 6
     Align = alLeft
-    ItemHeight = 13
+    ItemHeight = 27
     TabOrder = 0
-    ExplicitTop = 59
-    ExplicitHeight = 431
   end
   object lbOutput: TListBox
-    Left = 249
-    Top = 53
-    Width = 430
-    Height = 300
+    Left = 498
+    Top = 106
+    Width = 860
+    Height = 600
+    Margins.Left = 6
+    Margins.Top = 6
+    Margins.Right = 6
+    Margins.Bottom = 6
     Align = alClient
     Color = clBackground
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clWindow
-    Font.Height = -13
+    Font.Height = -26
     Font.Name = 'Consolas'
     Font.Style = []
-    ItemHeight = 15
+    ItemHeight = 31
     ParentFont = False
     TabOrder = 1
-    ExplicitLeft = 335
-    ExplicitTop = 91
-    ExplicitWidth = 289
-    ExplicitHeight = 393
   end
   object pnlGitConfig: TPanel
     Left = 0
-    Top = 353
-    Width = 679
-    Height = 65
+    Top = 706
+    Width = 1358
+    Height = 130
+    Margins.Left = 6
+    Margins.Top = 6
+    Margins.Right = 6
+    Margins.Bottom = 6
     Align = alBottom
     BevelOuter = bvLowered
     TabOrder = 2
-    ExplicitLeft = 48
-    ExplicitTop = 426
-    ExplicitWidth = 502
     DesignSize = (
-      679
-      65)
+      1358
+      130)
     object edtGitCmd: TLabeledEdit
-      Left = 16
-      Top = 32
-      Width = 643
-      Height = 21
+      Left = 32
+      Top = 64
+      Width = 1286
+      Height = 35
+      Margins.Left = 6
+      Margins.Top = 6
+      Margins.Right = 6
+      Margins.Bottom = 6
       Anchors = [akLeft, akTop, akRight]
-      EditLabel.Width = 258
-      EditLabel.Height = 13
+      EditLabel.Width = 531
+      EditLabel.Height = 27
+      EditLabel.Margins.Left = 6
+      EditLabel.Margins.Top = 6
+      EditLabel.Margins.Right = 6
+      EditLabel.Margins.Bottom = 6
       EditLabel.Caption = 'Git Command (choose "git.exe" from the "cmd" folder)'
+      ParentShowHint = False
+      ShowHint = True
       TabOrder = 0
+      Text = ''
+      TextHint = 'C:\Program Files\Git\cmd\git.exe'
       OnExit = edtGitCmdExit
-      ExplicitWidth = 673
     end
   end
   object pnlButtons: TPanel
     Left = 0
     Top = 0
-    Width = 679
-    Height = 53
+    Width = 1358
+    Height = 106
+    Margins.Left = 6
+    Margins.Top = 6
+    Margins.Right = 6
+    Margins.Bottom = 6
     Align = alTop
     BevelOuter = bvLowered
     TabOrder = 3
-    ExplicitWidth = 709
     object btnAddPath: TBitBtn
-      Left = 16
-      Top = 10
-      Width = 75
-      Height = 25
+      Left = 32
+      Top = 20
+      Width = 150
+      Height = 50
+      Margins.Left = 6
+      Margins.Top = 6
+      Margins.Right = 6
+      Margins.Bottom = 6
       Caption = 'Add Path'
       TabOrder = 0
       OnClick = btnAddPathClick
     end
-    object btnGitStatus: TBitBtn
-      Left = 105
-      Top = 10
-      Width = 75
-      Height = 25
-      Caption = 'Check Status'
+    object btnGitStatusSingle: TBitBtn
+      Left = 210
+      Top = 20
+      Width = 239
+      Height = 50
+      Margins.Left = 6
+      Margins.Top = 6
+      Margins.Right = 6
+      Margins.Bottom = 6
+      Action = actCheckOneGit
+      Caption = 'Check Status - One'
       TabOrder = 1
-      OnClick = btnGitStatusClick
+    end
+    object btnGitStatusAll: TBitBtn
+      Left = 461
+      Top = 20
+      Width = 239
+      Height = 50
+      Margins.Left = 6
+      Margins.Top = 6
+      Margins.Right = 6
+      Margins.Bottom = 6
+      Action = actCheckAllGit
+      Caption = 'Check Status - All'
+      TabOrder = 2
     end
   end
   object DosCommand: TDosCommand
@@ -109,11 +146,24 @@ object frmGitStatusMain: TfrmGitStatusMain
     MaxTimeAfterBeginning = 0
     MaxTimeAfterLastOutput = 0
     OnNewLine = DosCommandNewLine
+    OnTerminated = DosCommandTerminated
     Left = 288
     Top = 128
   end
   object ccRegistryLayoutSaver: TccRegistryLayoutSaver
     Left = 104
     Top = 176
+  end
+  object aclGitStatus: TActionList
+    Left = 144
+    Top = 392
+    object actCheckOneGit: TAction
+      Caption = 'Check Status - One'
+      OnExecute = actCheckOneGitExecute
+    end
+    object actCheckAllGit: TAction
+      Caption = 'Check Status - All'
+      OnExecute = actCheckAllGitExecute
+    end
   end
 end
